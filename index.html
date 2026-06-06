@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eclipse — Tracker d'Habitudes 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080a12;--card:#0d1117;--border:rgba(255,255,255,0.07);
+  --text:#cbd5e1;--muted:#94a3b8;--dim:#475569;
+  --orb:'Orbitron',sans-serif;--mono:'Share Tech Mono',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100vh}
+/* Loading */
+#loader{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999}
+.ld-title{font-family:var(--orb);font-size:13px;color:#f1f5f9;letter-spacing:.15em;margin-bottom:20px}
+.ld-bar-wrap{width:200px;height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}
+.ld-bar{height:100%;width:0%;background:#60a5fa;border-radius:2px;animation:ldanim 1.2s ease-in-out infinite}
+@keyframes ldanim{0%{width:0%;margin-left:0}50%{width:60%}100%{width:0%;margin-left:100%}}
+.ld-sub{font-size:9px;color:var(--dim);letter-spacing:.2em;margin-top:10px}
+/* Layout */
+.header{background:var(--card);border-bottom:1px solid var(--border);padding:16px 20px;display:flex;align-items:center;justify-content:space-between}
+.h-title{font-family:var(--orb);font-size:13px;font-weight:700;color:#f1f5f9;letter-spacing:.1em}
+.h-sub{font-size:9px;color:var(--dim);letter-spacing:.25em;margin-top:3px}
+.h-rank{text-align:right}
+.h-rank-lbl{font-size:9px;color:var(--dim);letter-spacing:.2em}
+.h-rank-badge{font-family:var(--orb);font-size:28px;font-weight:900;line-height:1;margin-top:2px}
+.h-rank-name{font-size:9px;letter-spacing:.15em;margin-top:2px}
+.tabs{display:flex;background:var(--card);border-bottom:1px solid var(--border)}
+.tab{flex:1;padding:10px 0;background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:var(--orb);font-size:9px;letter-spacing:.15em;color:var(--dim);transition:all .2s}
+.tab.on{color:#f1f5f9;border-bottom-color:#60a5fa}
+.body{padding:16px 20px}
+.months{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px}
+.mbtn{padding:4px 9px;font-size:9px;cursor:pointer;border:1px solid var(--border);background:transparent;color:#64748b;border-radius:4px;letter-spacing:.1em;font-family:var(--mono);transition:all .15s}
+.mbtn.on{border-color:#60a5fa;background:rgba(96,165,250,.1);color:#60a5fa}
+.sum-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.sum-month{font-family:var(--orb);font-size:10px;color:var(--muted);letter-spacing:.15em}
+.sum-rank{font-family:var(--orb);font-size:14px;font-weight:700;margin-top:4px}
+.sum-info{font-size:9px;color:#64748b;margin-top:5px}
+.saisir{padding:8px 14px;font-size:9px;letter-spacing:.12em;cursor:pointer;background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.3);color:#60a5fa;border-radius:6px;font-family:var(--orb);white-space:nowrap}
+.saisir:hover{opacity:.8}
+.hrow{margin-bottom:11px}
+.hhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.hleft{display:flex;align-items:center;gap:6px}
+.hicon{font-size:11px}
+.hstat{font-size:8px;color:var(--dim);letter-spacing:.15em}
+.hname{font-size:10px;color:var(--muted)}
+.hval{font-family:var(--orb);font-size:10px;letter-spacing:.05em}
+.hrbadge{font-family:var(--orb);font-size:8px;letter-spacing:.1em;margin-right:6px}
+.btrack{height:5px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden}
+.bfill{height:100%;border-radius:3px;transition:width .8s ease}
+.evo-lbl{font-size:9px;color:var(--dim);letter-spacing:.2em;margin-bottom:14px}
+.chart-wrap{position:relative;width:100%;height:260px}
+.legend{display:flex;flex-wrap:wrap;gap:5px 12px;margin-top:14px}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:9px;color:#64748b}
+.leg-line{width:12px;height:2px;border-radius:1px}
+.vsect{display:none}.vsect.on{display:block}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center;z-index:200}
+.overlay.on{display:flex}
+.mcard{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;width:90%;max-width:380px;max-height:85vh;overflow-y:auto}
+.mtitle{font-family:var(--orb);font-size:11px;color:#f1f5f9;margin-bottom:2px}
+.msub{font-size:9px;color:var(--dim);letter-spacing:.15em;margin-bottom:16px}
+.mrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+.mrow.div{padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--border)}
+.mlbl{font-size:10px;color:var(--muted)}
+.minp{width:52px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:4px;color:#e2e8f0;padding:3px 6px;font-size:11px;text-align:center;font-family:var(--mono)}
+.vbtn{width:100%;margin-top:16px;padding:10px 0;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.3);color:#60a5fa;border-radius:6px;cursor:pointer;font-family:var(--orb);font-size:9px;letter-spacing:.15em}
+.vbtn:hover{opacity:.8}
+.vbtn:disabled{opacity:.4;cursor:not-allowed}
+.sync-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:#475569;margin-left:8px;vertical-align:middle}
+.sync-dot.ok{background:#34d399}
+.sync-dot.saving{background:#fbbf24;animation:pulse .8s infinite}
+.sync-dot.error{background:#f87171}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+::-webkit-scrollbar{width:4px;background:var(--bg)}
+::-webkit-scrollbar-thumb{background:#1e293b;border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="ld-title">⚔️ ECLIPSE</div>
+  <div class="ld-bar-wrap"><div class="ld-bar"></div></div>
+  <div class="ld-sub">CHARGEMENT DES DONNÉES...</div>
+</div>
+
+<!-- APP (caché jusqu'au chargement) -->
+<div id="app" style="display:none">
+
+  <div class="header">
+    <div>
+      <div class="h-title">⚔️ ECLIPSE — JOURNAL DE PROGRESSION</div>
+      <div class="h-sub">SAISON 2026 · TRACKER D'HABITUDES</div>
+    </div>
+    <div class="h-rank">
+      <div class="h-rank-lbl">RANG GLOBAL <span class="sync-dot" id="syncDot"></span></div><div id="sync-msg" style="font-size:9px;letter-spacing:.1em;margin-top:2px;min-height:11px;color:#94a3b8"></div>
+      <div class="h-rank-badge" id="gBadge">—</div>
+      <div class="h-rank-name" id="gName">—</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" onclick="switchTab('stats')">📊 STATS DU MOIS</button>
+    <button class="tab"    onclick="switchTab('evo')">📈 ÉVOLUTION</button>
+  </div>
+
+  <div class="body">
+    <div class="months" id="monthSel"></div>
+
+    <div class="vsect on" id="vStats">
+      <div class="sum-card">
+        <div>
+          <div class="sum-month" id="sMonth"></div>
+          <div class="sum-rank"  id="sRank"></div>
+          <div class="sum-info"  id="sInfo"></div>
+        </div>
+        <button class="saisir" onclick="openModal()">SAISIR</button>
+      </div>
+      <div id="habitBars"></div>
+    </div>
+
+    <div class="vsect" id="vEvo">
+      <div class="evo-lbl">COMPLÉTION MENSUELLE PAR HABITUDE (%)</div>
+      <div class="chart-wrap">
+        <canvas id="evoChart" role="img" aria-label="Graphique évolution mensuelle 2026">Évolution des habitudes sur 12 mois.</canvas>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="modal" onclick="bgClose(event)">
+  <div class="mcard">
+    <div class="mtitle">SAISIR LES STATS</div>
+    <div class="msub" id="mSub"></div>
+    <div class="mrow div">
+      <span class="mlbl">📅 Jours dans le mois</span>
+      <input class="minp" type="number" min="1" max="31" id="inpJours">
+    </div>
+    <div id="mInputs"></div>
+    <button class="vbtn" id="validateBtn" onclick="confirmEdit()">✓ VALIDER ET SAUVEGARDER</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ── CONFIG ──────────────────────────────────────────────
+const API_KEY = "$2a$10$osXNkOiDmD1fcbJUsWarB.SpdQJWCBE3uZvghL1/h3nHHK8mJnuMG";
+const BIN_ID  = "6a22dcbada38895dfe8cb40e";
+const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+// ────────────────────────────────────────────────────────
+
+const HABITS=[
+  {key:"noFap",       label:"No Fap",                color:"#ff6b35",icon:"🔥",stat:"DISCIPLINE" },
+  {key:"musique",     label:"Musique 2h",             color:"#c084fc",icon:"🎵",stat:"CRÉATIVITÉ" },
+  {key:"alimentation",label:"Bonne Alimentation",    color:"#34d399",icon:"⚡",stat:"VITALITÉ"   },
+  {key:"sport",       label:"Sport / Marche",         color:"#f87171",icon:"⚔️",stat:"FORCE"      },
+  {key:"sommeil",     label:"Sommeil 7h",             color:"#60a5fa",icon:"🌙",stat:"RÉCUP"      },
+  {key:"meditation",  label:"Audio dev perso (matin)",color:"#fbbf24",icon:"🎧",stat:"MINDSET"    },
+  {key:"lecture",     label:"Lecture 30min",          color:"#a3e635",icon:"📖",stat:"INTEL"      },
+  {key:"deepwork",    label:"Deep Work 2h+",          color:"#fb923c",icon:"💻",stat:"XP MÉTIER"  },
+  {key:"apprentissage",label:"Quiz / Apprentissage",  color:"#38bdf8",icon:"🧠",stat:"KNOWLEDGE"  },
+  {key:"noSocial",    label:"Pas réseaux avant 10h",  color:"#d946ef",icon:"🚫",stat:"VOLONTÉ"    },
+];
+const MF=["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+const MS=["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
+const DM=[31,28,31,30,31,30,31,31,30,31,30,31];
+
+function mkDefault(){
+  return MS.map((m,i)=>({month:m,jours:DM[i],...Object.fromEntries(HABITS.map(h=>[h.key,0]))}));
+}
+
+function rank(p){
+  if(p>=95)return{r:"S",l:"LÉGENDAIRE",c:"#ffd700"};
+  if(p>=85)return{r:"A",l:"MAÎTRE",    c:"#c084fc"};
+  if(p>=70)return{r:"B",l:"ÉLITE",     c:"#60a5fa"};
+  if(p>=55)return{r:"C",l:"GUERRIER",  c:"#34d399"};
+  if(p>=35)return{r:"D",l:"APPRENTI",  c:"#fb923c"};
+  return         {r:"E",l:"NOVICE",    c:"#9ca3af"};
+}
+
+let data=mkDefault();
+let selM=new Date().getMonth();
+let chart=null;
+
+// ── CLOUD SYNC ──────────────────────────────────────────
+function setSyncStatus(status, msg){
+  const dot=document.getElementById("syncDot");
+  dot.className="sync-dot"+(status==="ok"?" ok":status==="saving"?" saving":status==="error"?" error":"");
+  const el=document.getElementById("sync-msg");
+  if(el){
+    const msgs={saving:"sync...",ok:"✓ sauvegardé",error:"✗ erreur réseau — JSONBin inaccessible",loading:"chargement...",load_error:"✗ chargement échoué — données réinitialisées"};
+    el.textContent=msgs[status]||"";
+    el.style.color=status==="error"||status==="load_error"?"#f87171":status==="ok"?"#34d399":"#94a3b8";
+  }
+}
+
+async function loadFromCloud(){
+  setSyncStatus("loading");
+  try{
+    const r=await fetch(`${BIN_URL}/latest`,{headers:{"X-Master-Key":API_KEY}});
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    const json=await r.json();
+    const d=json.record&&json.record.data;
+    if(d&&d.length===12){
+      setSyncStatus("ok");
+      return d.map((m,i)=>({...mkDefault()[i],...m}));
+    }
+    setSyncStatus("load_error");
+    return mkDefault();
+  }catch(e){
+    setSyncStatus("load_error");
+    return mkDefault();
+  }
+}
+
+async function saveToCloud(d){
+  setSyncStatus("saving");
+  try{
+    const r=await fetch(BIN_URL,{
+      method:"PUT",
+      headers:{"Content-Type":"application/json","X-Master-Key":API_KEY},
+      body:JSON.stringify({data:d})
+    });
+    if(!r.ok)throw new Error();
+    setSyncStatus("ok");
+  }catch{setSyncStatus("error");}
+}
+// ────────────────────────────────────────────────────────
+
+function buildMonths(){
+  document.getElementById("monthSel").innerHTML=
+    MS.map((m,i)=>`<button class="mbtn${i===selM?" on":""}" onclick="selMonth(${i})">${m}</button>`).join("");
+}
+
+function selMonth(i){
+  selM=i;
+  document.querySelectorAll(".mbtn").forEach((b,j)=>b.classList.toggle("on",j===i));
+  renderStats();
+}
+
+function renderStats(){
+  const md=data[selM];
+  const j=md.jours||DM[selM];
+  const act=HABITS.filter(h=>(md[h.key]||0)>0);
+  const avg=act.length>0?Math.round(act.reduce((s,h)=>s+(md[h.key]/j*100),0)/act.length):0;
+  const rk=rank(avg);
+
+  document.getElementById("gBadge").textContent=rk.r;
+  document.getElementById("gBadge").style.color=rk.c;
+  document.getElementById("gName").textContent=rk.l;
+  document.getElementById("gName").style.color=rk.c;
+
+  document.getElementById("sMonth").textContent=MF[selM].toUpperCase()+" 2026";
+  document.getElementById("sRank").textContent=`RANG ${rk.r} — ${rk.l}`;
+  document.getElementById("sRank").style.color=rk.c;
+  document.getElementById("sInfo").textContent=act.length>0
+    ?`${avg}% sur ${act.length} habitude${act.length>1?"s":""} actives · ${j} jours`
+    :"→ Aucune donnée — clique SAISIR pour entrer tes stats du mois";
+
+  document.getElementById("habitBars").innerHTML=HABITS.map(h=>{
+    const c=md[h.key]||0;
+    const p=j>0?Math.round(c/j*100):0;
+    const rh=rank(p);
+    const badge=c>0?`<span class="hrbadge" style="color:${rh.c}">${rh.r}</span>`:"";
+    const val=c>0?`${c}/${j} · ${p}%`:"—";
+    return`<div class="hrow">
+      <div class="hhead">
+        <div class="hleft"><span class="hicon">${h.icon}</span><span class="hstat">${h.stat}</span><span class="hname">${h.label}</span></div>
+        <div style="display:flex;align-items:center">${badge}<span class="hval" style="color:${c>0?h.color:"#475569"}">${val}</span></div>
+      </div>
+      <div class="btrack"><div class="bfill" style="width:${p}%;background:${h.color}"></div></div>
+    </div>`;
+  }).join("");
+}
+
+function renderChart(){
+  document.getElementById("legend").innerHTML=HABITS.map(h=>
+    `<div class="leg-item"><div class="leg-line" style="background:${h.color}"></div>${h.icon} ${h.label}</div>`
+  ).join("");
+  if(chart){chart.destroy();chart=null;}
+  chart=new Chart(document.getElementById("evoChart"),{
+    type:"line",
+    data:{
+      labels:MS,
+      datasets:HABITS.map(h=>({
+        label:`${h.icon} ${h.label}`,
+        data:data.map((m,i)=>{const v=m[h.key]||0;return v>0?Math.round(v/(m.jours||DM[i])*100):null;}),
+        borderColor:h.color,backgroundColor:"transparent",
+        borderWidth:1.5,pointRadius:0,tension:.3,spanGaps:false,
+      }))
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:"#0d1117",borderColor:"rgba(255,255,255,.1)",borderWidth:1,
+          titleColor:"#94a3b8",bodyColor:"#cbd5e1",titleFont:{size:10},bodyFont:{size:10},
+          callbacks:{label:ctx=>ctx.parsed.y!=null?`${ctx.dataset.label}: ${ctx.parsed.y}%`:null}
+        }
+      },
+      scales:{
+        x:{grid:{color:"rgba(255,255,255,.04)"},ticks:{color:"#475569",font:{size:9}},border:{display:false}},
+        y:{min:0,max:100,grid:{color:"rgba(255,255,255,.04)"},
+          ticks:{color:"#475569",font:{size:9},callback:v=>v+"%",stepSize:25},border:{display:false}}
+      }
+    }
+  });
+}
+
+function switchTab(t){
+  document.querySelectorAll(".tab").forEach((b,i)=>b.classList.toggle("on",i===(t==="stats"?0:1)));
+  document.getElementById("vStats").classList.toggle("on",t==="stats");
+  document.getElementById("vEvo").classList.toggle("on",t==="evo");
+  if(t==="evo")renderChart();
+}
+
+function openModal(){
+  const md=data[selM];
+  document.getElementById("mSub").textContent=MF[selM].toUpperCase()+" 2026 — jours réussis";
+  document.getElementById("inpJours").value=md.jours||DM[selM];
+  document.getElementById("mInputs").innerHTML=HABITS.map(h=>
+    `<div class="mrow"><span class="mlbl">${h.icon} ${h.label}</span>
+     <input class="minp" type="number" min="0" max="31" id="i_${h.key}" value="${md[h.key]||0}"
+       style="border-color:${h.color}44;color:${h.color}"></div>`
+  ).join("");
+  document.getElementById("modal").classList.add("on");
+}
+
+function bgClose(e){if(e.target===document.getElementById("modal"))document.getElementById("modal").classList.remove("on");}
+
+async function confirmEdit(){
+  const btn=document.getElementById("validateBtn");
+  btn.disabled=true;
+  btn.textContent="SAUVEGARDE EN COURS...";
+  const j=Math.max(1,parseInt(document.getElementById("inpJours").value)||DM[selM]);
+  const u={jours:j};
+  HABITS.forEach(h=>{u[h.key]=Math.max(0,parseInt(document.getElementById(`i_${h.key}`).value)||0);});
+  data[selM]={...data[selM],...u};
+  await saveToCloud(data);
+  btn.disabled=false;
+  btn.textContent="✓ VALIDER ET SAUVEGARDER";
+  document.getElementById("modal").classList.remove("on");
+  renderStats();
+  if(document.getElementById("vEvo").classList.contains("on"))renderChart();
+}
+
+// ── INIT ────────────────────────────────────────────────
+(async()=>{
+  data=await loadFromCloud();
+  document.getElementById("loader").style.display="none";
+  document.getElementById("app").style.display="block";
+  buildMonths();
+  renderStats();
+})();
+</script>
+</body>
+</html>
